@@ -9,6 +9,42 @@ from sales_blends import registrar_venta_por_bolsa
 # 📊 CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="Cumbre Real - Control de Inventarios", layout="wide", page_icon="☕")
 
+# --- SISTEMA DE SEGURIDAD (CANDADO) ---
+def check_password():
+    def password_entered():
+        if (
+            st.session_state["username"] == st.secrets["auth"]["username"]
+            and st.session_state["password"] == st.secrets["auth"]["password"]
+        ):
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # Borra la contraseña de memoria por seguridad
+            del st.session_state["username"]
+        else:
+            st.session_state["password_correct"] = False
+
+    if "password_correct" not in st.session_state:
+        # Muestra el formulario para ingresar datos
+        st.title("🔑 Acceso al Sistema - Cumbre Real")
+        st.text_input("Usuario", key="username")
+        st.text_input("Contraseña", type="password", key="password")
+        st.button("Iniciar Sesión", on_click=password_entered)
+        return False
+    elif not st.session_state["password_correct"]:
+        # Si falló la contraseña, muestra error y vuelve a pedirla
+        st.title("🔑 Acceso al Sistema - Cumbre Real")
+        st.text_input("Usuario", key="username")
+        st.text_input("Contraseña", type="password", key="password")
+        st.button("Iniciar Sesión", on_click=password_entered)
+        st.error("😕 Usuario o contraseña incorrectos.")
+        return False
+    else:
+        # Contraseña correcta
+        return True
+
+if not check_password():
+    st.stop()  # Detiene la aplicación aquí si no se ha iniciado sesión
+# ----------------------------------------
+
 # Inicializar las tablas en la base de datos de la nube si no existen
 try:
     init_db()
