@@ -176,14 +176,16 @@ elif opciones_modulo == "🏭 Registrar Tueste (Materia Prima -> Tolva)":
             with c1:
                 lot_code = st.text_input("Código Único de Tolva (Ej: TLV-A1):").strip().upper()
                 blend_name = st.text_input("Nombre del Lote (Ej: Base Arábica Oscuro):")
-                total_kg = st.number_input("Kilos Limpios Obtenidos (Final):", min_value=0.0, step=0.1)
+                costo_mano_obra = st.number_input("Costo de Mano de Obra ($):", min_value=0.0, step=1.0)
             with c2:
                 sel_a = st.selectbox("Café Arábica Utilizado:", opciones_materia)
-                kg_a = st.number_input("Kilos Sacados de Arábica:", min_value=0.0, step=0.1)
+                kg_a = st.number_input("Kilos Sacados de Arábica (Verde):", min_value=0.0, step=0.1)
+                total_kg_arabica_obtenido = st.number_input("Kilos Arábica Obtenidos (Final Tostado):", min_value=0.0, step=0.1)
                 costo_t = st.number_input("Costo de Maquila/Tueste total ($):", min_value=0.0, step=1.0)
             with c3:
                 sel_r = st.selectbox("Café Robusta Utilizado (Opcional):", ["NINGUNO"] + opciones_materia)
-                kg_r = st.number_input("Kilos Sacados de Robusta:", min_value=0.0, step=0.1)
+                kg_r = st.number_input("Kilos Sacados de Robusta (Verde):", min_value=0.0, step=0.1)
+                total_kg_robusta_obtenido = st.number_input("Kilos Robusta Obtenidos (Final Tostado):", min_value=0.0, step=0.1)
                 costo_f = st.number_input("Costo de Transporte/Flete total ($):", min_value=0.0, step=1.0)
             
             f_manual = st.text_input("Fecha/Hora Manual (Vacío para automática YYYY-MM-DD HH:MM):")
@@ -193,12 +195,27 @@ elif opciones_modulo == "🏭 Registrar Tueste (Materia Prima -> Tolva)":
                 cod_a = sel_a.split(" | ")[0]
                 cod_r = None if sel_r == "NINGUNO" else sel_r.split(" | ")[0]
                 
+                # Llamada a la nueva función con todas las variables actualizadas
                 res = transformar_materia_a_procesado(
-                    lot_code, blend_name, total_kg, "TUESTE", 
-                    cod_a, kg_a, cod_r, kg_r, costo_t, costo_f, f_manual if f_manual else None
+                    lot_code=lot_code,
+                    blend_name=blend_name,
+                    total_kg_arabica_obtenido=total_kg_arabica_obtenido,
+                    total_kg_robusta_obtenido=total_kg_robusta_obtenido,
+                    tipo_proceso="TUESTE",
+                    cod_arabica=cod_a,
+                    kg_arabica=kg_a,
+                    cod_robusta=cod_r,
+                    kg_robusta=kg_r,
+                    costo_tueste=costo_t,
+                    costo_transporte=costo_f,
+                    costo_mano_obra=costo_mano_obra,
+                    fecha_manual=f_manual if f_manual else None
                 )
-                if res["status"] == "success": st.success(res["message"])
-                else: st.error(res["message"])
+                
+                if res["status"] == "success": 
+                    st.success(res["message"])
+                else: 
+                    st.error(res["message"])
                 st.rerun()
 
 # ---- MODULO 3: EMBOLSADO Y MEZCLADO ----
